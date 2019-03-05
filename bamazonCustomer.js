@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const chalk = require("chalk")
 const Table = require("cli-table");
 
 
@@ -29,7 +30,7 @@ const promptUser = () => {
         {
             name: "action",
             type: "list",
-            message: "\nWhat would you like to do?",
+            message: "\n\nWhat would you like to do?",
             choices: ["Purchase Items", "Quit"]
         }
     ]).then(function(response){
@@ -52,7 +53,7 @@ const promptUser = () => {
 const outputTable = (input) => {
 
     let table = new Table({
-        head: ["ID", "Name", "Department", "Stock", "Price"],
+        head: [chalk.cyan("ID"), chalk.cyan("Name"), chalk.cyan("Department"), chalk.cyan("Stock"), chalk.cyan("Price")],
         colWidths: [5, 50, 20, 10, 10]
     });
 
@@ -80,7 +81,7 @@ const purchaseItem = () => {
             {
                 name: "selection",
                 type: "input",
-                message: "\n" + productsTable + "\nPlease enter the ID of the item you wish to purchase",
+                message: "\n" + productsTable + "\n\nPlease enter the ID of the item you wish to purchase",
             },
 
             {
@@ -94,17 +95,19 @@ const purchaseItem = () => {
             let selectedItem;
             results.forEach(e => {
 
-                if(response.selection === e.item_id){
+                if(parseInt(response.selection) === e.item_id){
                     
                     selectedItem = e;
                 }
             });
 
             if(!selectedItem){
-                console.log("Please select a valid item");
+                let errorMessage = "\n================================\nPLEASE SELECT A VALID ITEM\n================================"
+                console.log(chalk.red(errorMessage));
                 purchaseItem();
             } else if (selectedItem.stock_quantity < response.quantity){
-                console.log("We don't have enough of that item, but it will be restocked soon!");
+                let outOfStockMessage = "\n================================\nWe don't have enough of that item, but it will be restocked soon!\n================================";
+                console.log(chalk.yellow(outOfStockMessage));
                 purchaseItem();
             } else {
                 checkout(selectedItem, response.quantity);
@@ -126,7 +129,7 @@ const checkout = (selection, quantity) => {
             item_id: selection.item_id
         }
     ])
-    console.log("You have purchased " + qunatity + " of '" + selection.product_name + "' for $" + totPrice);
+    console.log("\n\nYou have purchased " + quantity + " of '" + selection.product_name + "' for $" + totPrice);
     promptUser();
     
 }
